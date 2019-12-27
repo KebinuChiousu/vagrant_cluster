@@ -1,5 +1,5 @@
 .vagrant
 Vagrantfile
 *.override.yml
-user.yml
+users.yml
 users/*.pub
