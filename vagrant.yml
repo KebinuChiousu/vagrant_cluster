@@ -1,0 +1,28 @@
+vagrant:
+  box: "meredithkm/alpine-x86_64"
+  box_version: "3.11.2"
+  ssh_shell: "/bin/sh"
+
+  nodes:
+
+    - name: node1
+      hostname: "lb"
+      private_network:
+        ip: "172.16.0.10"
+        netmask: "255.255.0.0"
+      public_network:
+        ip: "10.10.10.81"
+        netmask: "255.255.255.0"
+        bridge: "eno1"
+
+    - name: node2
+      hostname: "web1"
+      private_network:
+        ip: "172.16.1.10"
+        netmask: "255.255.0.0"
+
+    - name: node3
+      hostname: "web2"
+      private_network:
+        ip: "172.16.1.11"
+        netmask: "255.255.0.0"

@@ -1,0 +1,4 @@
+---
+users:
+  - username: "admin"
+    groups: "wheel"

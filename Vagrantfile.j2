@@ -1,0 +1,33 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "{{ vagrant.box }}"
+  config.vm.box_version = "{{ vagrant.box_version}}"
+  config.vm.boot_timeout = 120
+
+  config.ssh.shell = "{{ vagrant.ssh_shell }}"
+  {% for node in vagrant.nodes %}
+  config.vm.define :{{ node.name }} do |{{ node.name }}|
+    {{node.name}}.vm.hostname = "{{node.hostname}}"
+    {% if node.private_network -%}
+    {{node.name}}.vm.network :private_network, ip: "{{node.private_network.ip}}", :netmask => "{{node.private_network.netmask}}"
+    {%- endif %}
+    {% if node.public_network -%}
+    {{node.name}}.vm.network :public_network, ip: "{{node.public_network.ip}}", :netmask => "{{node.public_network.netmask}}", :bridge => "{{node.public_network.bridge}}"
+    {%- endif %}
+
+    {{node.name}}.vm.provider "virtualbox" do |v|
+      v.memory = 4096
+      v.cpus = 1
+      v.customize ["modifyvm", :id, "--cpuexecutioncap", "75"]
+    end
+
+    {{node.name}}.vm.provision :ansible do |ansible|
+      # ansible.verbose = "v"
+      ansible.playbook = "playbook.yml"
+    end
+
+  end
+  {% endfor %}
+end

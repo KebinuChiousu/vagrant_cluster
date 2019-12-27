@@ -1,0 +1,56 @@
+---
+- hosts: all
+  become: True
+  gather_facts: no
+  remote_user: vagrant
+  tasks:
+  - include_vars: users.yml
+
+  - name: install python3
+    raw: "sudo apk add python3"
+
+  - apk:
+      name: bash
+      state: latest
+      update_cache: yes
+
+  - name: Add users | create users, shell, home dirs
+    user: 
+      name: '{{ item.username }}'
+      groups: '{{ item.groups }}'
+      shell: "/bin/bash" 
+      createhome: yes 
+      comment : 'create with ansible'
+    with_items: '{{users}}'
+
+  - name: generate passwords for users
+    shell:
+      cmd: |
+        < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo; > /tmp/passwd
+        echo {{item.username}}:$(cat /tmp/passwd) | chpasswd -c SHA512
+    args:
+      executable: /bin/bash
+    with_items: '{{users}}'
+
+  - name: Setup | authorized key upload
+    authorized_key: 
+      user: '{{ item.username }}'
+      key: "{{ lookup('file', 'users/{{ item.username }}.pub', errors='ignore') }}"
+    with_items: '{{users}}'
+
+  - name: make dirs 0755
+    command: find /home -type d ! -perm 0755 -exec chmod 0755 {} \;
+
+  - name: make files 0644 
+    command: find /home -type f ! -perm 0644 -exec chmod 0644 {} \;
+
+  - name: update hosts file 
+    shell:
+      cmd: |
+        cat >> /etc/hosts <<EOF
+        172.31.38.143 ns0
+        172.31.77.147 swarm-1a
+        172.31.17.60  swarm-1b
+        EOF
+    args:
+      executable: /bin/bash
