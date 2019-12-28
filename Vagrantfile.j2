@@ -18,13 +18,23 @@ Vagrant.configure("2") do |config|
     {%- endif %}
 
     {{node.name}}.vm.provider "virtualbox" do |v|
+
+      disk = './.vagrant/machines/{{node.name}}/virtualbox/disk002.vdi'
+
+      unless File.exist?(disk)
+        v.customize ['createhd', '--filename', disk, '--variant', 'Fixed', '--size', 50 * 1024]
+      end
+
+      v.customize ['storageattach', :id,  '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk]
+
       v.memory = 4096
       v.cpus = 1
       v.customize ["modifyvm", :id, "--cpuexecutioncap", "75"]
+
     end
 
     {{node.name}}.vm.provision :ansible do |ansible|
-      # ansible.verbose = "v"
+      ansible.verbose = "v"
       ansible.playbook = "playbook.yml"
     end
 

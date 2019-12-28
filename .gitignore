@@ -3,3 +3,4 @@ Vagrantfile
 *.override.yml
 users.yml
 users/*.pub
+hosts

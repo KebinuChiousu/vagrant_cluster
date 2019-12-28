@@ -48,6 +48,26 @@ def generate_users():
              file = open(keyfile, 'w+')
              file.close
 
+
+def generate_hosts():
+
+    vagrant_yml = ''
+
+    if path.exists('vagrant.override.yml'):
+        vagrant_yml = 'vagrant.override.yml'
+    else:
+        vagrant_yml = 'vagrant.yml'
+
+    config = parse_yml(vagrant_yml)
+    vagrant = config['vagrant']
+
+    file = open('hosts', 'w')
+    for node in vagrant['nodes']:
+      if 'private_network' in node:
+        file.write(node['private_network']['ip'] + ' ' + node['hostname'] +'\n')
+    file.close()
+
+
 def load_template(template_path='Vagrantfile.j2'):
     return (jinja2.Environment(autoescape=True,
                                loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
@@ -57,7 +77,7 @@ def load_template(template_path='Vagrantfile.j2'):
 def generate_artifacts():
     generate_users()  
     generate_vagrantfile()
-
+    generate_hosts()
 
 if __name__ == '__main__':
     generate_artifacts()
