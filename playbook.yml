@@ -1,44 +1,12 @@
 ---
 - hosts: all
+  roles:
+    - common
   become: True
   gather_facts: no
   remote_user: vagrant
   tasks:
   - include_vars: users.yml
-
-  - name: install python3
-    raw: "apk add --no-progress python3"
-
-  - apk:
-      name: bash,parted,xfsprogs,py3-pip,python3-dev,libffi-dev,openssl-dev,gcc,libc-dev,make,docker
-      state: latest
-      update_cache: yes
-
-  - name: create /sdb1
-    parted:
-      device: /dev/sdb
-      number: 1
-      state: present
-
-  - name: format /dev/sdb1 with xfs
-    filesystem:
-      fstype: xfs
-      dev: /dev/sdb1
-
-  - name: update fstab
-    shell:
-      cmd: |
-        UUID=$(blkid /dev/sdb1 | awk '{print $2}' | sed 's|"||g')
-        mkdir -p /var/lib/docker
-        echo $UUID /var/lib/docker xfs defaults 0 1 >> /etc/fstab
-        mount -a
-
-  - name: configure docker
-    shell:
-      cmd: |
-        rc-update add docker boot
-        service docker start
-        python3 -m pip install docker docker-compose
 
   - name: Add users | create users, shell, home dirs
     user: 
