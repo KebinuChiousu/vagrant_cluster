@@ -9,6 +9,15 @@ destroy:
 	vagrant destroy -f
 	rm -rf .vagrant
 
+start:
+	vagrant up --no-provision
+
+suspend:
+	vagrant suspend
+
+stop:
+	vagrant halt
+
 status:
 	vagrant status
 
